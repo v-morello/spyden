@@ -1,0 +1,1 @@
+Functions to evaluate the signal-to-noise ratio of pulsar data in a mathematically correct fashion.

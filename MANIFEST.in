@@ -1,0 +1,7 @@
+global-include *.py 
+global-include *.md
+include LICENSE
+include Makefile
+# NOTE: any executables / libraries must also be included. When the module is
+# installed with 'pip install', any files built from e.g. C/C++ sources are 
+# produced in a temporary directory and THEN copied to 'site-packages'
