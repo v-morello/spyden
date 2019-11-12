@@ -5,6 +5,7 @@ MODULE_NAME = 'psnr'
 
 install_requires = [
     'numpy>=1.13',
+    'matplotlib>=2.0'
 ]
 
 

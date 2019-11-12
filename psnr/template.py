@@ -218,13 +218,13 @@ class Template(object):
         fig: matplotlib.Figure
         """
         fig = plt.figure(figsize=(6, 4.5), dpi=dpi)
-        plt.bar(range(self.size), self.data, width=0.9)
+        plt.bar(range(self.size), self.data, width=0.9, color='#b3b3b3')
 
         ymin, ymax = plt.ylim()
         plt.plot(
             [self.refbin, self.refbin], 
             [ymin, ymax], 
-            linestyle='--', color='#ff9900', lw=2.0, label='Reference Bin')
+            linestyle='--', color='k', lw=2.0, label='Reference Bin')
         plt.ylim(ymin, ymax)
 
         plt.xlim(-0.5, self.size - 0.5)
@@ -283,7 +283,8 @@ class TemplateBank(list):
         Parameters
         ----------
         widths: iterable
-            List or iterable of ints
+            List or iterable of ints representing the boxcar widths in number
+            of bins
 
         Returns
         -------
@@ -305,6 +306,7 @@ class TemplateBank(list):
         ----------
         widths: iterable
             List or iterable of numbers (both int and float accepted)
+            representing the boxcar widths in number of bins
 
         Returns
         -------

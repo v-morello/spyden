@@ -9,6 +9,9 @@ log = logging.getLogger('psnr')
 
 def get_snr(data, temp, sigma='iqr'):
     """
+    Compute the signal-to-noise ratio map of input data using one or multiple
+    pulse templates.
+
     Parameters
     ----------
     data: ndarray
