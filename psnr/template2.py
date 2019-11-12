@@ -25,12 +25,14 @@ class Template(object):
     """ 
     TODO
     """
-    def __init__(self, data, pad_value=0.0, refbin=0, reference='start'):
+    def __init__(self, data, pad_value=0.0, refbin=0, reference='start', kind='undefined', shape_params={}):
         # TODO: check input
         self._data = data
         self._pad_value = float(pad_value)
         self._refbin = int(refbin) # refin must be in [0, data.size[
         self._reference = str(reference)
+        self._kind = str(kind)
+        self._shape_params = dict(shape_params)
 
     @property
     def data(self):
@@ -52,6 +54,14 @@ class Template(object):
     def reference(self):
         return self._reference
 
+    @property
+    def kind(self):
+        return self._kind
+
+    @property
+    def shape_params(self):
+        return self._shape_params
+
     def prepared_data(self, n):
         """
         Returns the pulse template padded to n bins, ready to be FFT convolved
@@ -71,11 +81,17 @@ class Template(object):
         n: int
             The total length to which the template must be padded. This will
             generally be a power of two to compute FFTs faster.
+
+        Raises
+        ------
+        ValueError: if n is smaller than the template size
         """
         if not n >= self.size:
             raise ValueError("Cannot pad template data to length shorter than template size")
 
         # Pad to a total of n bins by appending 'pad_value' on the right
+        # NOTE: padding has to be done on the right side so that 'refbin'
+        # stays the same !
         x = np.pad(
             self.data, 
             (0, n - self.size), # pad on right size up to length n
@@ -112,7 +128,8 @@ class Template(object):
             raise ValueError("w must be of type int")
         if not w > 0:
             raise ValueError("w must be strictly positive")
-        return cls(np.ones(w), pad_value=0.0, refbin=0, reference='start')
+        shape = {'w': w}
+        return cls(np.ones(w), pad_value=0.0, refbin=0, reference='start', kind='boxcar', shape_params=shape)
 
     @classmethod
     def gaussian(cls, w):
@@ -148,7 +165,8 @@ class Template(object):
         xmax = int(ceil(3.5 * sigma))
         x = np.arange(-xmax, xmax + 1)
         data = exp(-x**2 / (2 * sigma**2))
-        return cls(data, pad_value=data[-1], refbin=len(x)//2, reference='peak')
+        shape = {'w': w}
+        return cls(data, pad_value=data[-1], refbin=len(x)//2, reference='peak', kind='gaussian', shape_params=shape)
 
     def plot(self, dpi=100):
         """
@@ -168,15 +186,27 @@ class Template(object):
             linestyle='--', color='#ff9900', lw=2.0, label='Reference Bin')
         plt.ylim(ymin, ymax)
 
+        plt.xlim(-0.5, self.size - 0.5)
         plt.xlabel("Bin Index")
         plt.ylabel("Amplitude")
         plt.grid(linestyle=':')
         plt.legend(loc='upper right')
 
-        title = "Template bins = {}".format(self.size)
+        title = str(self)
         plt.title(title)
         plt.tight_layout()
         return fig
+
+    def __str__(self):
+        shape_strings = [
+            "{:s}={:.3f}".format(key, value)
+            for key, value in self.shape_params.items()
+            ]
+        shape_descr = ','.join(shape_strings)
+        return "Template(size={s.size}, kind={s.kind}, {0:s})".format(shape_descr, s=self)
+
+    def __repr__(self):
+        return str(self)
 
 
 class TemplateBank(object):
