@@ -23,13 +23,55 @@ def normalise(data):
 
 class Template(object):
     """ 
-    TODO
+    Create a noise-free pulse template of arbitrary shape from a numpy array.
+    NOTE: Use classmethods such as Template.boxcar() or Template.gaussian() to
+    generate Templates of pre-defined shape.
+
+    Parameters
+    ----------
+    data: ndarray
+        One dimensional array representing the pulse values
+    pad_value: float
+        The value with which the template will be padded on the right side,
+        just before being convolved with some input data. This value must
+        be well chosen to avoid introducting steps in the padded template.
+    refbin: int
+        The reference bin index of the template. If 'S' is the S/N array
+        obtained by circularly convolving this template with some input data X,
+        then:
+        S[k] = signal-to-noise ratio when X[k] is aligned with the template's
+            reference bin.
+    reference: str
+        A string explaining what the reference bin corresponds to, e.g.
+        'start', 'peak', etc. This can be anything, and it is only there for
+        making things clear to the user.
+    kind: str
+        A string describing the type of function, e.g. 'boxcar', 'gaussian'.
+    shape_params: dict
+        A dictionary with any additional shape parameters required to fully
+        describe the template. For both boxcars and gaussians, this only 
+        contains one key 'w' which is the FWHM of the template expressed in
+        number of bins. This
+
+    Returns
+    -------
+    temp: Template
     """
-    def __init__(self, data, pad_value=0.0, refbin=0, reference='start', kind='undefined', shape_params={}):
-        # TODO: check input
+    def __init__(self, data, pad_value=0.0, refbin=0, reference='start', 
+        kind='undefined', shape_params={}):
+        if not isinstance(data, np.ndarray):
+            raise ValueError("data must be a np.ndarray instance")
+        if data.ndim != 1:
+            raise ValueError("data must have exactly one dimension")
+
+        if not isinstance(refbin, int):
+            raise ValueError("refbin must be an int")
+        if not 0 <= refbin < data.size:
+            raise ValueError("Must have 0 <= refbin < data.size")
+
         self._data = data
         self._pad_value = float(pad_value)
-        self._refbin = int(refbin) # refin must be in [0, data.size[
+        self._refbin = int(refbin)
         self._reference = str(reference)
         self._kind = str(kind)
         self._shape_params = dict(shape_params)
@@ -153,11 +195,8 @@ class Template(object):
             A Gaussian pulse template. The reference bin is located at the peak
             of the Gaussian.
         """
-        try:
-            w = float(w)
-        except:
-            raise ValueError("Could not convert w to float")
-
+        if not isinstance(w, float):
+            raise ValueError("w must be of type float")
         if not w > 0:
             raise ValueError("w must be strictly positive")
 
@@ -283,8 +322,3 @@ class TemplateBank(object):
         Template.prepared_data() for details.
         """
         return np.asarray([t.prepared_data(n) for t in self.templates])
-
-
-if __name__ == '__main__':
-    data = np.ones(3)
-    t = Template(data, pad_value=0.0, refbin=0, reference='start')
