@@ -16,7 +16,7 @@ def get_snr(x, t, sigma_method='iqr'):
         Either the method to evaluate the background noise standard deviation,
         or specify its value directly.
     """
-    if not t.size == x.shape[-1]:
+    if not t.nbins == x.shape[-1]:
         raise ValueError("Template has wrong number of bins")
 
     # Normalise to zero mean along the last dimension

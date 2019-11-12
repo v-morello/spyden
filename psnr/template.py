@@ -39,7 +39,7 @@ class Template(object):
         return self._data
 
     @property
-    def size(self):
+    def nbins(self):
         return self._data.size
 
     @property
@@ -113,6 +113,36 @@ def plot_template(t, figsize=(10, 4), dpi=100):
     return fig
 
 
+class TemplateBank(object):
+    """ """
+    def __init__(self, templates):
+        # TODO: check all widths are identical, etc.
+        self._templates = templates
+
+    @property
+    def templates(self):
+        return self._templates
+
+    @property
+    def nbins(self):
+        raise NotImplementedError
+
+    @classmethod
+    def boxcars(cls, n, widths):
+        templates = [
+            Template.boxcar(n, w) 
+            for w in sorted(widths)
+            ]
+        return cls(templates)
+
+    def _conv_input(self):
+        return np.asarray([
+            t._conv_input() for t in self.templates
+            ])
+
+
 if __name__ == '__main__':
     t = Template.boxcar(1024, 5)
-    print(t)
+    tbank = TemplateBank.boxcars(256, range(1, 32))
+    for t in tbank.templates:
+        print(t)
