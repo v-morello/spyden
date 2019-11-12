@@ -39,19 +39,19 @@ class Template(object):
         The reference bin index of the template. If 'S' is the S/N array
         obtained by circularly convolving this template with some input data X,
         then:
-        S[k] = signal-to-noise ratio when X[k] is aligned with the template's
-            reference bin.
+        S[k] = signal-to-noise ratio when X[k] is aligned with the reference
+            bin of the template
     reference: str
         A string explaining what the reference bin corresponds to, e.g.
-        'start', 'peak', etc. This can be anything, and it is only there for
-        making things clear to the user.
+        'start', 'peak', etc. This is only for clarity, and can be anything.
     kind: str
         A string describing the type of function, e.g. 'boxcar', 'gaussian'.
+        This is only for clarity, and can be anything.
     shape_params: dict
         A dictionary with any additional shape parameters required to fully
         describe the template. For both boxcars and gaussians, this only 
         contains one key 'w' which is the FWHM of the template expressed in
-        number of bins. This
+        number of bins. This is only for clarity, and can be anything.
 
     Returns
     -------
@@ -63,6 +63,8 @@ class Template(object):
             raise ValueError("data must be a np.ndarray instance")
         if data.ndim != 1:
             raise ValueError("data must have exactly one dimension")
+        if not data.size:
+            raise ValueError("data is empty")
 
         if not isinstance(refbin, int):
             raise ValueError("refbin must be an int")
@@ -250,7 +252,8 @@ class Template(object):
 
 class TemplateBank(list):
     """ 
-    A convenience class wrapping a list of Template objects
+    A convenience class for generating and wrapping a list of Template objects.
+    NOTE: Convenience classmethods are provided to easily generate templates
 
     Parameters
     ----------
