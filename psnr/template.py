@@ -248,9 +248,14 @@ class Template(object):
         return str(self)
 
 
-class TemplateBank(object):
+class TemplateBank(list):
     """ 
-    TODO
+    A convenience class wrapping a list of Template objects
+
+    Parameters
+    ----------
+    template: iterable
+        List or iterable of Template objects
     """
     def __init__(self, templates):
         if not templates:
@@ -259,19 +264,12 @@ class TemplateBank(object):
         if not all(isinstance(t, Template) for t in templates):
             raise ValueError("All input elements must be of Template instances")
 
-        self._templates = list(templates)
-
-    @property
-    def templates(self):
-        return self._templates
-
-    @property
-    def ntemp(self):
-        return len(self.templates)
+        super(TemplateBank, self).__init__(templates)
 
     @property
     def maxsize(self):
-        return max(t.size for t in self.templates)
+        """ Size of the largest Template """
+        return max(t.size for t in self)
 
     @classmethod
     def boxcars(cls, widths):
@@ -321,4 +319,4 @@ class TemplateBank(object):
         with some input data with n bins. The output is a 2D array. See
         Template.prepared_data() for details.
         """
-        return np.asarray([t.prepared_data(n) for t in self.templates])
+        return np.asarray([t.prepared_data(n) for t in self])

@@ -36,7 +36,7 @@ def get_snr(data, temp, sigma='iqr'):
     p = data.shape[-1] # number of phase bins
 
     nprof = np.prod(data.shape[:-1]) if data.ndim > 1 else 1
-    ntemp = 1 if isinstance(temp, Template) else temp.ntemp
+    ntemp = 1 if isinstance(temp, Template) else len(temp)
 
     # Reshape data to 2D until calculations are done
     x = data.reshape(nprof, p)
