@@ -1,5 +1,6 @@
 import numpy as np
-from psnr import cpadpow2, noise_std, Template, TemplateBank
+from psnr import noise_std, Template, TemplateBank
+from psnr.cpad import cpadpow2
 from psnr.noisestats import NOISE_STD_METHODS
 
 
