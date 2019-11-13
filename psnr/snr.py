@@ -58,6 +58,7 @@ def snratio(data, temp, sigma='diff'):
 
     ### Noise stats
     mean = x.mean(axis=1)
+    mean = mean.astype(np.float32)
     
     if isinstance(sigma, float):
         # Case where the standard deviation was specified by the user
@@ -65,17 +66,18 @@ def snratio(data, temp, sigma='diff'):
     else:
         # Estimate from data
         std = noise_std(x, method=sigma)
+    std = std.astype(np.float32)
 
     ### Normalise and pad input
     x = (x - mean.reshape(-1, 1)) / std.reshape(-1, 1)
-    x = cpadpow2(x)
+    x = cpadpow2(x).astype(np.float32)
 
     ### Get S/N using circular convolution theorem
     fx = np.fft.rfft(x).reshape(nprof, 1, -1)
 
     # this does padding to right number of bins
     # and the correct time-reversal of templates
-    y = temp.prepared_data(x.shape[-1])
+    y = temp.prepared_data(x.shape[-1]).astype(np.float32)
     fy = np.fft.rfft(y).reshape(1, ntemp, -1)
     snr = np.fft.irfft(fx * fy)
-    return snr, mean, sigma
+    return snr, mean, std
