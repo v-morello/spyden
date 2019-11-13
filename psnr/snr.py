@@ -73,8 +73,9 @@ def snratio(data, temp, sigma='diff'):
     ### Get S/N using circular convolution theorem
     fx = np.fft.rfft(x).reshape(nprof, 1, -1)
 
-    # this does padding to p bins and correct time-reversal of templates
-    y = temp.prepared_data(p)
+    # this does padding to right number of bins
+    # and the correct time-reversal of templates
+    y = temp.prepared_data(x.shape[-1])
     fy = np.fft.rfft(y).reshape(1, ntemp, -1)
     snr = np.fft.irfft(fx * fy)
     return snr, mean, sigma
