@@ -131,9 +131,11 @@ class Template(object):
         ValueError: if n is smaller than the template size
         """
         if not n >= self.size:
-            raise ValueError("Cannot pad template data to length n = {}; this "
+            msg = ("Cannot pad template data to length n = {}; this "
                 "is shorter than the template size ({}). You are probably "
                 "trying to use this template on data that is too short.")
+            msg = msg.format(n, self.size)
+            raise ValueError(msg)
 
         # Pad to a total of n bins by appending 'pad_value' on the right
         # NOTE: padding has to be done on the right side so that 'refbin'
