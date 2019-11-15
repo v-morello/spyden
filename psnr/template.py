@@ -188,7 +188,7 @@ class Template(object):
 
         Parameters
         ----------
-        w: float
+        w: float or int
             FWHM in number of bins. Non-integer values are accepted.
 
         Returns
@@ -197,8 +197,9 @@ class Template(object):
             A Gaussian pulse template. The reference bin is located at the peak
             of the Gaussian.
         """
-        if not isinstance(w, float):
-            raise ValueError("w must be of type float")
+        if not isinstance(w, (float, int)):
+            raise ValueError("w must be of type float or int")
+        w = float(w)
         if not w > 0:
             raise ValueError("w must be strictly positive")
 
