@@ -21,14 +21,16 @@ def noise_std_diff(x):
     frequency noise / signals as long as their variations from one sample to
     the next is much smaller than the true white noise standard deviation s.
 
-    If x is the sum of an undesirable signal low frequency signal f and of
-    Gaussian noise with mean m and variance s^2, and y = diff(y), then:
-    Var(y) = 2 * s^2 + Var(diff(f))
+    If x is the sum of a red noise process with variance s_r^2 and of
+    Gaussian white noise with mean m and variance s_w^2, and y = diff(y),
+    then:
+    Var(y) = 2 * s_w^2 + s_r^2
 
-    where diff(f) ~= f' for a low-frequency signal, 
-    and Var(diff(f)) <= max((f')^2) 
-
-    As long as |max(f')| << s, the variance of y is not significantly affected.
+    A red noise process with variance s_r^2 is such that the difference 
+    between consecutive samples of that process is normally distributed
+    with zero mean and variance s_r^2.
+    
+    As long as s_r << s_w, the variance of y is not significantly affected.
     Rather than calculating the variance of y directly, we estimate it from 
     the IQR of y, to make it robust to outliers.
     """
@@ -47,18 +49,37 @@ NOISE_STD_METHODS = {
 }
 
 
-def noise_std(data, method):
+def get_method(name):
+    try:
+        func = NOISE_STD_METHODS.get(name)
+    except KeyError:
+        choices = list(NOISE_STD_METHODS.keys())
+        raise ValueError("Noise estimation method must be one of: {!r}".format(choices))
+    return func
+
+
+def noise_std(data, method='diff'):
     """
+    Estimate the standard deviation of the white noise background in each
+    line of data.
+
     Parameters
     ----------
     data: ndarray
         Last dimension is phase
     method: str
+        Name of the estimation method. Choices are:
+        'iqr': Estimate from the interquartile range of the data along the
+            phase dimension. Robust to outliers but not to red noise.
+        'diff': Estimate from he sequence of consecutive differences
+            (numpy.diff) of the data along the phase dimension. Robust to
+            both outliers and red noise.
+        (default: 'diff')
 
     Returns
     -------
     sigma: ndarray
         Estimated standard deviation of every profile in data
     """
-    func = NOISE_STD_METHODS.get(method)
+    func = get_method(method)
     return func(data)

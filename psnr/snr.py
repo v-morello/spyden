@@ -1,13 +1,14 @@
 import numpy as np
 from psnr import noise_std, Template, TemplateBank
 from psnr.cpad import cpadpow2
-from psnr.noisestats import NOISE_STD_METHODS
+from psnr.noisestats import get_method
 
 
 def snratio(data, temp, sigma='diff'):
     """
     Compute the signal-to-noise ratio map of input data using one or multiple
-    pulse templates.
+    pulse templates. The background noise standard deviation is either 
+    estimated from the data, or can be specified manually.
 
     Parameters
     ----------
@@ -17,7 +18,8 @@ def snratio(data, temp, sigma='diff'):
         Noise-free pulse template(s)
     sigma: str or float, optional
         Either the method name to evaluate the background noise standard 
-        deviation, or specify its value directly.
+        deviation, or specify its value directly. See noise_stats() for
+        a description of the different methods.
         (default: 'diff')
 
     Returns
@@ -44,9 +46,7 @@ def snratio(data, temp, sigma='diff'):
     if isinstance(sigma, float):
         pass
     elif isinstance(sigma, str):
-        if not sigma in NOISE_STD_METHODS:
-            valid_choices = list(NOISE_STD_METHODS.keys())
-            raise ValueError("Invalid noise estimation method: must be one of {}".format(valid_choices))
+        noise_std_func = get_method(sigma)
     else:
         raise ValueError("sigma must be either a valid noise estimation method name, or a float")
 
@@ -65,7 +65,7 @@ def snratio(data, temp, sigma='diff'):
         std = np.full(nprof, sigma)
     else:
         # Estimate from data
-        std = noise_std(x, method=sigma)
+        std = noise_std_func(x)
     std = std.astype(np.float32)
 
     ### Normalise and pad input
