@@ -207,7 +207,7 @@ class Template(object):
         x = np.arange(-xmax, xmax + 1)
         data = exp(-x**2 / (2 * sigma**2))
         shape = {'w': w}
-        return cls(data, pad_value=data[-1], refbin=len(x)//2, reference='peak', kind='gaussian', shape_params=shape)
+        return cls(data, pad_value=0.0, refbin=len(x)//2, reference='peak', kind='gaussian', shape_params=shape)
 
     def plot(self, dpi=100):
         """
