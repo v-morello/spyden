@@ -2,8 +2,8 @@ import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 
-from psnr import Template, TemplateBank
-from psnr.template import normalise
+from spyden import Template, TemplateBank
+from spyden.template import normalise
 
 
 class TestTemplate(unittest.TestCase):

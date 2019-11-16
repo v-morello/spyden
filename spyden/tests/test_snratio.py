@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from psnr import snratio, Template, TemplateBank
+from spyden import snratio, Template, TemplateBank
 
 
 class TestSnratio(unittest.TestCase):

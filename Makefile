@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
-PKG = psnr
-PKG_DIR = psnr
+PKG = spyden
+PKG_DIR = spyden
 TESTS_DIR = ${PKG_DIR}/tests
 
 # NOTE: -e installs in "Development Mode"

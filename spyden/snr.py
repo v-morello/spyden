@@ -1,7 +1,7 @@
 import numpy as np
-from psnr import noise_std, Template, TemplateBank
-from psnr.cpad import cpadpow2
-from psnr.noisestats import get_method
+from spyden import noise_std, Template, TemplateBank
+from spyden.cpad import cpadpow2
+from spyden.noisestats import get_method
 
 
 def snratio(data, temp, sigma='diff'):

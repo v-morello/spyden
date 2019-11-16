@@ -1,7 +1,7 @@
 import os
 from setuptools import setup, find_packages
 
-MODULE_NAME = 'psnr'
+MODULE_NAME = 'spyden'
 
 install_requires = [
     'numpy>=1.13',
@@ -26,7 +26,7 @@ def parse_version():
 
 setup(
     name=MODULE_NAME,
-    url='https://bitbucket.org/vmorello/psnr',
+    url='https://bitbucket.org/vmorello/{}'.format(MODULE_NAME),
     author='Vincent Morello',
     author_email='vmorello@gmail.com',
     description='Functions to evaluate the signal-to-noise ratio of pulsar data in a mathematically correct fashion',

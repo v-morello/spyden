@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from psnr.cpad import cpadpow2
+from spyden.cpad import cpadpow2
 
 
 class TestCpadpow2(unittest.TestCase):
