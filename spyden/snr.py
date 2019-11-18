@@ -37,6 +37,10 @@ def snratio(data, temp, mu='median', sigma='iqr'):
         The mean of every profile
     std: ndarray
         The estimated white noise standard deviation for every profile
+    models: ndarray
+        For each profile, the best-fit noise-free pulse model, whose shape is
+        that of the template that maximizes S/N.
+        This is an array with the same shape as 'data'
     """
     if not isinstance(data, np.ndarray):
         raise ValueError("data must be a numpy array")
@@ -53,17 +57,19 @@ def snratio(data, temp, mu='median', sigma='iqr'):
     nprof = x.shape[0]
     ntemp = 1 if isinstance(temp, Template) else len(temp)
 
+    # Get mean and std
+    # NOTE: make sure they are 1D arrays even when there is only one profile
     if isinstance(mu, float):
         mean = np.full(nprof, mu)
     elif isinstance(mu, str):
-        mean = noise_mean(data, method=mu)
+        mean = noise_mean(data, method=mu).reshape(nprof)
     else:
         raise ValueError("mu must be either a valid noise mean estimation method name, or a float")
 
     if isinstance(sigma, float):
         std = np.full(nprof, sigma)
     elif isinstance(sigma, str):
-        std = noise_std(data, method=sigma)
+        std = noise_std(data, method=sigma).reshape(nprof)
     else:
         raise ValueError("sigma must be either a valid noise stddev estimation method name, or a float")
 
@@ -82,4 +88,23 @@ def snratio(data, temp, mu='median', sigma='iqr'):
 
     # Un-pad
     snr = snr[:, :, :p]
-    return snr, mean, std
+
+    ### Models
+    models = np.zeros(shape=(nprof, p))
+
+    for iprof in range(nprof):
+        snr_plane = snr[iprof]
+        itemp, ibin = np.unravel_index(snr_plane.argmax(), snr_plane.shape)
+        best_snr = snr_plane[itemp, ibin]
+
+        if isinstance(temp, TemplateBank):
+            best_template = temp[itemp]
+        else:
+            best_template = temp
+
+        models[iprof] = mean[iprof]
+        models[iprof, :best_template.size] += best_template.data * std[iprof] * best_snr
+        shift = ibin - best_template.refbin
+        models[iprof] = np.roll(models[iprof], shift)
+    
+    return snr, mean, std, models
