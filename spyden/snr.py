@@ -79,4 +79,7 @@ def snratio(data, temp, mu='median', sigma='iqr'):
     y = temp.prepared_data(x.shape[-1]).astype(np.float32)
     fy = np.fft.rfft(y).reshape(1, ntemp, -1)
     snr = np.fft.irfft(fx * fy)
+
+    # Un-pad
+    snr = snr[:, :, :p]
     return snr, mean, std
