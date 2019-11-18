@@ -11,23 +11,20 @@ class TestTemplate(unittest.TestCase):
     def test_normalise(self):
         x = np.arange(10)
         z = normalise(x)
-        m = z.mean()
         sqsum = (z**2).sum()
-        self.assertAlmostEqual(m, 0.0)
         self.assertAlmostEqual(sqsum, 1.0)
 
     def test_init(self):
         size = 5
         data = np.arange(size)
-        pad_value = -0.5
         refbin = 1
         reference = 'secondbin'
         kind = 'custom'
         shape_params={'hello': 1}
+        sqsum = (data ** 2).sum()
 
         t = Template(
             data, 
-            pad_value=pad_value, 
             refbin=refbin, 
             reference=reference, 
             kind=kind, 
@@ -35,8 +32,7 @@ class TestTemplate(unittest.TestCase):
             )
 
         self.assertEqual(size, t.size)
-        self.assertTrue(np.allclose(data, t.data))
-        self.assertEqual(pad_value, t.pad_value)
+        self.assertTrue(np.allclose(data, t.data * sqsum**0.5))
         self.assertEqual(refbin, t.refbin)
         self.assertEqual(reference, t.reference)
         self.assertEqual(kind, t.kind)
@@ -60,8 +56,8 @@ class TestTemplate(unittest.TestCase):
         self.assertEqual(prep.dtype, np.float32)
 
         ### normalisation
-        self.assertAlmostEqual(prep.mean(), 0.0)
-        self.assertAlmostEqual((prep ** 2).sum(), 1.0)
+        # NOTE: 'places' reduced to 6 because 'prep' is float32
+        self.assertAlmostEqual((prep ** 2).sum(), 1.0, places=6)
 
         ### alignment and time-reversal
         # indices of largest and second-largest value
@@ -77,14 +73,12 @@ class TestTemplate(unittest.TestCase):
         t = Template.boxcar(w)
         self.assertEqual(t.size, w)
         self.assertEqual(t.refbin, 0)
-        self.assertEqual(t.pad_value, 0.0)
-        self.assertTrue(np.allclose(t.data, 1.0))
+        self.assertTrue(np.allclose(t.data, w ** -0.5))
 
     def test_gaussian(self):
         w = 5.0
         t = Template.gaussian(w)
         self.assertEqual(t.refbin, t.size//2)
-        self.assertEqual(t.pad_value, 0.0)
 
     def test_plot(self):
         t = Template.boxcar(5)

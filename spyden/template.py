@@ -29,10 +29,6 @@ class Template(object):
     ----------
     data: ndarray
         One dimensional array representing the pulse values
-    pad_value: float
-        The value with which the template will be padded on the right side,
-        just before being convolved with some input data. This value must
-        be well chosen to avoid introducting steps in the padded template.
     refbin: int
         The reference bin index of the template. If 'S' is the S/N array
         obtained by circularly convolving this template with some input data X,
@@ -57,7 +53,7 @@ class Template(object):
         Noise-free pulse template where the data have been normalised to unit
         square sum
     """
-    def __init__(self, data, pad_value=0.0, refbin=0, reference='start', 
+    def __init__(self, data, refbin=0, reference='start', 
         kind='undefined', shape_params={}):
         if not isinstance(data, np.ndarray):
             raise ValueError("data must be a np.ndarray instance")
@@ -72,7 +68,6 @@ class Template(object):
             raise ValueError("Must have 0 <= refbin < data.size")
 
         self._data = normalise(data)
-        self._pad_value = float(pad_value)
         self._refbin = int(refbin)
         self._reference = str(reference)
         self._kind = str(kind)
@@ -85,10 +80,6 @@ class Template(object):
     @property
     def size(self):
         return self.data.size
-
-    @property
-    def pad_value(self):
-        return self._pad_value
 
     @property
     def refbin(self):
@@ -139,14 +130,14 @@ class Template(object):
             msg = msg.format(n, self.size)
             raise ValueError(msg)
 
-        # Pad to a total of n bins by appending 'pad_value' on the right
+        # Zero-pad to a total of n bins
         # NOTE: padding has to be done on the right side so that 'refbin'
         # stays the same !
         x = np.pad(
             self.data, 
             (0, n - self.size), # pad on right size up to length n
             mode='constant', 
-            constant_values=(self.pad_value, self.pad_value))
+            constant_values=(0.0, 0.0))
 
         # Place reference bin at index 0
         x = np.roll(x, -self.refbin)
@@ -179,7 +170,7 @@ class Template(object):
         if not w > 0:
             raise ValueError("w must be strictly positive")
         shape = {'w': w}
-        return cls(np.ones(w), pad_value=0.0, refbin=0, reference='start', kind='boxcar', shape_params=shape)
+        return cls(np.ones(w), refbin=0, reference='start', kind='boxcar', shape_params=shape)
 
     @classmethod
     def gaussian(cls, w):
@@ -214,7 +205,7 @@ class Template(object):
         x = np.arange(-xmax, xmax + 1)
         data = exp(-x**2 / (2 * sigma**2))
         shape = {'w': w}
-        return cls(data, pad_value=0.0, refbin=len(x)//2, reference='peak', kind='gaussian', shape_params=shape)
+        return cls(data, refbin=len(x)//2, reference='peak', kind='gaussian', shape_params=shape)
 
     def plot(self, dpi=100):
         """
