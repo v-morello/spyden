@@ -1,6 +1,7 @@
 # spyden
 
 Evaluate the signal-to-noise ratio of a pulse in noisy time series data, in a statistically optimal fashion: with [matched filters](https://en.wikipedia.org/wiki/Matched_filter).
+The name stands for **s**ignificance of a **p**ulse buried **de**ep in **n**oise. The **y** is just there to sound cool, really.
 
 ### Citation
 
@@ -20,8 +21,8 @@ In the presence of uncorrelated Gaussian noise (white noise), and if the pulse s
 Clone the repository and type `make install` to install the module in editatble mode with `pip`:
 
 ```bash
-git clone https://vmorello@bitbucket.org/vmorello/psnr.git
-cd psnr/
+git clone https://vmorello@bitbucket.org/vmorello/spyden.git
+cd spyden/
 make install
 ```
 
