@@ -1,10 +1,9 @@
 import numpy as np
-from spyden import noise_std, Template, TemplateBank
+from spyden import noise_mean, noise_std, Template, TemplateBank
 from spyden.cpad import cpadpow2
-from spyden.noisestats import get_method
 
 
-def snratio(data, temp, sigma='diff'):
+def snratio(data, temp, mu='median', sigma='iqr'):
     """
     Compute the signal-to-noise ratio map of input data using one or multiple
     pulse templates. The background noise standard deviation is either 
@@ -16,11 +15,16 @@ def snratio(data, temp, sigma='diff'):
         Array of single pulses 1-D or 2-D. Last dimension must be phase.
     temp: Template or TemplateBank
         Noise-free pulse template(s)
+    mu: str or float, optional
+        Either the method name to evaluate the background noise mean, or
+        specify its value directly. See noise_mean() for
+        a description of the different methods.
+        (default: 'median')
     sigma: str or float, optional
         Either the method name to evaluate the background noise standard 
-        deviation, or specify its value directly. See noise_stats() for
+        deviation, or specify its value directly. See noise_std() for
         a description of the different methods.
-        (default: 'diff')
+        (default: 'iqr')
 
     Returns
     -------
@@ -43,30 +47,25 @@ def snratio(data, temp, sigma='diff'):
     if not isinstance(temp, (Template, TemplateBank)):
         raise ValueError("temp must be a Template or TemplateBank")
 
-    if isinstance(sigma, float):
-        pass
-    elif isinstance(sigma, str):
-        noise_std_func = get_method(sigma)
-    else:
-        raise ValueError("sigma must be either a valid noise estimation method name, or a float")
-
     p = data.shape[-1] # number of phase bins
     x = data.reshape(-1, p) # reshape data to 2D if it is 1D
 
     nprof = x.shape[0]
     ntemp = 1 if isinstance(temp, Template) else len(temp)
 
-    ### Noise stats
-    mean = x.mean(axis=1)
-    mean = mean.astype(np.float32)
-    
-    if isinstance(sigma, float):
-        # Case where the standard deviation was specified by the user
-        std = np.full(nprof, sigma)
+    if isinstance(mu, float):
+        mean = np.full(nprof, mu)
+    elif isinstance(mu, str):
+        mean = noise_mean(data, method=mu)
     else:
-        # Estimate from data
-        std = noise_std_func(x)
-    std = std.astype(np.float32)
+        raise ValueError("mu must be either a valid noise mean estimation method name, or a float")
+
+    if isinstance(sigma, float):
+        std = np.full(nprof, sigma)
+    elif isinstance(sigma, str):
+        std = noise_std(data, method=sigma)
+    else:
+        raise ValueError("sigma must be either a valid noise stddev estimation method name, or a float")
 
     ### Normalise and pad input
     x = (x - mean.reshape(-1, 1)) / std.reshape(-1, 1)

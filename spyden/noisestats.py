@@ -4,8 +4,7 @@ import numpy as np
 def noise_std_iqr(x):
     """ 
     Estimate white noise standard deviation from the inter-quartile range of 
-    the data. Robust to outliers but NOT to low-frequency noise or 
-    interference.
+    the data. Robust to outliers but NOT red noise.
     """
     # If data is of shape (k_1, ..., k_n)
     # stats has shape (num_percentiles, k_1, ..., k_n-1)
@@ -14,72 +13,115 @@ def noise_std_iqr(x):
     return sigma
 
 
-def noise_std_diff(x):
+def noise_std_diffcov(x):
     """ 
     Estimate white noise standard deviation from the sequence of consecutive
-    differences (numpy.diff) of the data. Robust to both outliers and to low
-    frequency noise / signals as long as their variations from one sample to
-    the next is much smaller than the true white noise standard deviation s.
+    differences (numpy.diff) of the data. Robust to red noise but NOT outliers.
 
     If x is the sum of a red noise process with variance s_r^2 and of
-    Gaussian white noise with mean m and variance s_w^2, and y = diff(y),
+    Gaussian white noise with mean m and variance s_w^2, and y = diff(x),
     then:
-    Var(y) = 2 * s_w^2 + s_r^2
+    E[Cov(y[:-1], y[1:])] = 
+        [ 2 s_w^2 + s_r^2    - s_w^2           ]
+        [         - s_w^2      2 s_w^2 + s_r^2 ]
 
     A red noise process with variance s_r^2 is such that the difference 
     between consecutive samples of that process is normally distributed
     with zero mean and variance s_r^2.
-    
-    As long as s_r << s_w, the variance of y is not significantly affected.
-    Rather than calculating the variance of y directly, we estimate it from 
-    the IQR of y, to make it robust to outliers.
     """
-    delta = np.diff(x, axis=-1)
+    def func(line):
+        y = np.diff(line)
+        c = np.cov(y[:-1], y[1:])
+        sw2 = -c[0, 1]
+        return sw2 ** 0.5
 
-    # We could return delta.std(axis=-1) / sqrt(2), but that would be sensitive
-    # to outliers. We use the IQR instead.
-    stats = np.percentile(delta, (25, 75), axis=-1)
-    sigma = (stats[1] - stats[0]) / 1.3489795003921634
-    return sigma / 2**0.5
+    if x.ndim == 1:
+        return func(x)
+    elif x.ndim == 2:
+        return np.asarray([func(line) for line in x])
+    else:
+        raise ValueError("input must be 1D or 2D")
+
+
+def noise_mean_median(x):
+    return np.median(x, axis=-1)
 
 
 NOISE_STD_METHODS = {
     'iqr': noise_std_iqr,
-    'diff': noise_std_diff
+    'diffcov': noise_std_diffcov
 }
 
 
-def get_method(name):
+NOISE_MEAN_METHODS = {
+    'median': noise_mean_median
+}
+
+
+def get_mean_method(name):
     try:
-        func = NOISE_STD_METHODS.get(name)
+        func = NOISE_MEAN_METHODS[name]
     except KeyError:
-        choices = list(NOISE_STD_METHODS.keys())
-        raise ValueError("Noise estimation method must be one of: {!r}".format(choices))
+        choices = list(NOISE_MEAN_METHODS.keys())
+        raise ValueError("Noise mean estimation method must be one of: {!r}".format(choices))
     return func
 
 
-def noise_std(data, method='diff'):
+def get_std_method(name):
+    try:
+        func = NOISE_STD_METHODS[name]
+    except KeyError:
+        choices = list(NOISE_STD_METHODS.keys())
+        raise ValueError("Noise stddev estimation method must be one of: {!r}".format(choices))
+    return func
+
+
+def noise_mean(data, method='median'):
     """
-    Estimate the standard deviation of the white noise background in each
-    line of data.
+    Estimate the mean of the white noise background in each line of data.
 
     Parameters
     ----------
     data: ndarray
-        Last dimension is phase
+        1D or 2D array, last dimension is phase
     method: str
         Name of the estimation method. Choices are:
-        'iqr': Estimate from the interquartile range of the data along the
-            phase dimension. Robust to outliers but not to red noise.
-        'diff': Estimate from he sequence of consecutive differences
-            (numpy.diff) of the data along the phase dimension. Robust to
-            both outliers and red noise.
-        (default: 'diff')
+        'median': use the median along the phase dimension
+        (default: 'median')
 
     Returns
     -------
-    sigma: ndarray
-        Estimated standard deviation of every profile in data
+    mu: float or ndarray
+        Estimated noise mean in every profile in data. float if data is 1D,
+        ndarray otherwise.
     """
-    func = get_method(method)
+    func = get_mean_method(method)
+    return func(data)
+
+
+def noise_std(data, method='iqr'):
+    """
+    Estimate the standard deviation of the white noise background in 
+    each line of data.
+
+    Parameters
+    ----------
+    data: ndarray
+        1D or 2D array, last dimension is phase
+    method: str
+        Name of the estimation method. Choices are:
+        'iqr': Estimate from the interquartile range of the data along the
+            phase dimension. Robust to outliers but NOT to red noise.
+        'diffcov': Estimate from the covariance of consecutive differences
+            (numpy.diff) of the data along the phase dimension. Robust to
+            red noise but NOT outliers.
+        (default: 'iqr')
+
+    Returns
+    -------
+    sigma: float or ndarray
+        Estimated noise standard deviation in every profile in data. float if
+        data is 1D, ndarray otherwise.
+    """
+    func = get_std_method(method)
     return func(data)
