@@ -5,7 +5,7 @@ from numpy import log, pi, sin, sqrt, ceil, exp
 
 def normalise(data):
     """
-    Normalise data to zero-mean and unit square sum
+    Normalise data to unit square sum
 
     Parameters
     ----------
@@ -15,10 +15,8 @@ def normalise(data):
     -------
     normalised: ndarray, 1D
     """
-    m = data.mean()
-    # This gives the square sum of (data - m)
-    sqsum = data.var(ddof=0) * data.size
-    return (data - m) * sqsum**-0.5
+    sqsum = (data ** 2).sum()
+    return data * sqsum**-0.5
 
 
 class Template(object):
@@ -56,6 +54,8 @@ class Template(object):
     Returns
     -------
     temp: Template
+        Noise-free pulse template where the data have been normalised to unit
+        square sum
     """
     def __init__(self, data, pad_value=0.0, refbin=0, reference='start', 
         kind='undefined', shape_params={}):
@@ -71,7 +71,7 @@ class Template(object):
         if not 0 <= refbin < data.size:
             raise ValueError("Must have 0 <= refbin < data.size")
 
-        self._data = data
+        self._data = normalise(data)
         self._pad_value = float(pad_value)
         self._refbin = int(refbin)
         self._reference = str(reference)
@@ -117,7 +117,7 @@ class Template(object):
         - circularly shifted to place the reference bin at index 0
         - properly time-reversed so that the circular convolution theorem 
           correctly applies
-        - normalised to zero mean and unit square sum
+        - normalised to unit square sum
         - cast to np.float32 to save computation time later on
 
         Parameters
@@ -130,6 +130,8 @@ class Template(object):
         ------
         ValueError: if n is smaller than the template size
         """
+        # NOTE: normalisation to unit square sum must be done BEFORE padding !
+
         if not n >= self.size:
             msg = ("Cannot pad template data to length n = {}; this "
                 "is shorter than the template size ({}). You are probably "
@@ -153,7 +155,7 @@ class Template(object):
         # NOTE: this is NOT like reversing the array
         # since y[0] = x[0]
         x = np.roll(x[::-1], 1)
-        return normalise(x).astype(np.float32)
+        return x.astype(np.float32)
 
     @classmethod
     def boxcar(cls, w):
