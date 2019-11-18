@@ -28,8 +28,6 @@ class TestSnratio(unittest.TestCase):
 
         iprof, itemp, ibin = np.unravel_index(snr.argmax(), snr.shape)
         self.assertEqual(snr.dtype, np.float32)
-        self.assertEqual(mu.dtype, np.float32)
-        self.assertEqual(sigma.dtype, np.float32)
         self.assertEqual(ibin, i0)
 
         tgauss = Template.gaussian(w0)
@@ -66,9 +64,6 @@ class TestSnratio(unittest.TestCase):
 
         iprof, itemp, ibin = np.unravel_index(snr.argmax(), snr.shape)
         self.assertEqual(snr.dtype, np.float32)
-        self.assertEqual(mu.dtype, np.float32)
-        self.assertEqual(sigma.dtype, np.float32)
-
         self.assertEqual(iprof, i0)
         self.assertEqual(itemp, w0 - 1)
         self.assertEqual(ibin, j0)
