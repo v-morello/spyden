@@ -22,6 +22,17 @@ name = "spyden"
 readme = "README.md"
 requires-python = ">=3.8"
 
+[project.optional-dependencies]
+dev = [
+  "isort",
+  "flake8",
+  "black",
+  "pytest",
+  "pytest-cov",
+  "build",
+  "twine",
+]
+
 [project.urls]
 Homepage = "https://github.com/v-morello/spyden"
 
