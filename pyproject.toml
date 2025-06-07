@@ -18,7 +18,7 @@ dependencies = [
 description = "Functions to evaluate the signal-to-noise ratio of radio transients"
 dynamic = ["version"]
 license = "MIT"
-name = "spyden"
+name = "spyden-pulsar"
 readme = "README.md"
 requires-python = ">=3.9"
 
