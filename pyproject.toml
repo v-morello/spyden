@@ -1,0 +1,35 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=61", "wheel", "setuptools-scm"]
+
+[project]
+authors = [
+  {name = "Vincent Morello", email = "vmorello@gmail.com"},
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: Unix",
+  "Topic :: Scientific/Engineering :: Astronomy",
+]
+dependencies = [
+  "numpy>=1.13",
+  "matplotlib>=2.0",
+]
+description = "Functions to evaluate the signal-to-noise ratio of radio transients"
+dynamic = ["version"]
+license = {text = "MIT License"}
+name = "spyden"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://bitbucket.org/vmorello/spyden"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools_scm]
+write_to = "spyden/_version.py"
