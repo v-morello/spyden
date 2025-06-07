@@ -25,3 +25,32 @@ jobs:
       - name: Test
         run: |
           make test
+
+  publish-to-pypi:
+    # Inspired by: https://stackoverflow.com/a/73385644
+    # Only run when a git tag is pushed
+    if: startsWith(github.event.ref, 'refs/tags/')
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install pre-requisites
+        # Upgrade packaging to avoid this issue:
+        # https://github.com/pypa/twine/issues/1216
+        run: |
+          python -m pip install --upgrade pip packaging
+          pip install build twine
+      - name: Build wheel
+        # NOTE: build creates a .egg-info directory which interferes
+        # with the pip install command in next step
+        run: |
+          python -m build
+          rm -rf *.egg-info
+      - name: Install wheel
+        run: pip install dist/*.whl
+      - name: Test wheel
+        run: |
+          python -c "import spyden"
+      - name: Upload to PyPI
+        run: twine upload --repository pypi --username __token__ --password ${{ secrets.PYPI_TOKEN }} dist/*.whl

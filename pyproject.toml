@@ -17,10 +17,10 @@ dependencies = [
 ]
 description = "Functions to evaluate the signal-to-noise ratio of radio transients"
 dynamic = ["version"]
-license = {text = "MIT License"}
+license = "MIT"
 name = "spyden"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 
 [project.optional-dependencies]
 dev = [
