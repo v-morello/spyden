@@ -1,3 +1,6 @@
+![CI status](https://github.com/v-morello/spyden/actions/workflows/CI.yml/badge.svg?branch=main)
+ ![License](https://img.shields.io/badge/License-MIT-green.svg)
+
 # spyden
 
 Evaluate the signal-to-noise ratio of a pulse in noisy time series data, in a statistically optimal fashion: with [matched filters](https://en.wikipedia.org/wiki/Matched_filter).
