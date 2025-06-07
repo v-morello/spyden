@@ -20,15 +20,19 @@ In the presence of uncorrelated Gaussian noise (white noise), and if the pulse s
 
 ### Installation
 
-Clone the repository and type `make install` to install the module in editatble mode with `pip`:
+The module is available from PyPI as `spyden-pulsar`:
+
+```bash
+pip install spyden-pulsar
+```
+
+If you wish to contribute or edit the code, clone the repository and type `make install` to install the module in editable mode:
 
 ```bash
 git clone https://github.com/v-morello/spyden.git
 cd spyden/
 make install
 ```
-
-This automatically installs the required dependencies if they are not present.
 
 ### Usage
 
